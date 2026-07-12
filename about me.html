@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About Me — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Alkatra:wght@400;700&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --pink:    #ff66cc;
+  --purple:  #cc66ff;
+  --white:   rgba(252, 242, 253, 0.792);
+  --dim:     rgba(255, 255, 255, 0.521);
+  --dimmer:  rgba(255, 255, 255, 0.41);
+  --blue-cold: rgba(100,180,255,0.45);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: #000;
+  color: var(--white);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  min-height: 100vh;
+  cursor: none;
+  overflow-x: hidden;
+}
+
+.vignette {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.92) 100%);
+  pointer-events: none; z-index: 1;
+}
+.grain {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 2; opacity: 0.38;
+}
+.edge-top {
+  position: fixed; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue-cold), transparent);
+  z-index: 3; pointer-events: none;
+}
+.edge-right {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 1px;
+  background: linear-gradient(180deg, transparent, var(--blue-cold), transparent);
+  z-index: 3; pointer-events: none;
+}
+
+.starfield {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.starfield span {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: twinkle var(--d, 4s) ease-in-out infinite alternate;
+  opacity: 0;
+}
+@keyframes twinkle {
+  0%   { opacity: 0; }
+  50%  { opacity: var(--op, 0.18); }
+  100% { opacity: 0; }
+}
+
+.bg-stars { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+.bg-star {
+  position: absolute;
+  color: var(--pink);
+  font-size: var(--sz, 18px);
+  opacity: 0;
+  animation: bgStarBreath var(--bd, 3s) ease-in-out infinite alternate;
+  animation-delay: var(--bdelay, 0s);
+  filter: drop-shadow(0 0 4px var(--pink));
+  line-height: 1; user-select: none;
+}
+@keyframes bgStarBreath {
+  0%   { opacity: 0.08; transform: scale(0.9) rotate(0deg); }
+  100% { opacity: 0.4;  transform: scale(1.15) rotate(20deg); }
+}
+
+#floatStars {
+  position: fixed; inset: 0;
+  z-index: 8; pointer-events: none; overflow: hidden;
+}
+.fstar {
+  position: absolute;
+  font-size: var(--fsz, 12px);
+  line-height: 1;
+  color: var(--fcol, #ff66cc);
+  opacity: 0;
+  user-select: none;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0 8px rgba(255,102,204,0.35));
+  transition: none;
+}
+
+#cursor {
+  position: fixed; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--pink);
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 8px var(--pink); transition: background 0.2s;
+}
+#cursorRing {
+  position: fixed; width: 32px; height: 32px;
+  border-radius: 50%; border: 1.5px solid rgba(204,102,255,0.6);
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+}
+#cursorRing.hover { width: 48px; height: 48px; border-color: rgba(255,102,204,0.5); }
+
+/* ── Back Home Button ── */
+.back-home {
+  position: fixed;
+  top: 0;
+  left: 40px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  pointer-events: all;
+  z-index: 101;
+  opacity: 0;
+  animation: fadeIn 2s 0.6s ease forwards;
+  cursor: none;
+}
+
+.back-home .back-arrow {
+  width: 28px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,102,204,0.7), rgba(204,102,255,0.4));
+  position: relative;
+  transition: width 0.5s ease, opacity 0.4s ease;
+  opacity: 0.6;
+}
+
+.back-home .back-arrow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+  width: 6px;
+  height: 6px;
+  border-left: 1px solid rgba(255,102,204,0.8);
+  border-bottom: 1px solid rgba(255,102,204,0.8);
+  transition: border-color 0.5s ease;
+}
+
+.back-home .back-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(9px, 1.05vw, 12px);
+  letter-spacing: 0.28em;
+  color: rgba(255, 255, 255, 0.555);
+  text-transform: uppercase;
+  transition: color 0.5s ease, letter-spacing 0.5s ease;
+}
+
+.back-home:hover .back-arrow {
+  width: 38px;
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(255,102,204,1), rgba(204,102,255,0.7));
+}
+
+.back-home:hover .back-arrow::before {
+  border-color: rgba(255,102,204,1);
+}
+
+.back-home:hover .back-label {
+  color: rgba(233, 208, 236, 0.9);
+  letter-spacing: 0.35em;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; padding: 22px 40px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, transparent 100%);
+}
+nav a {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: 0.82rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); text-decoration: none; padding: 4px 0;
+  position: relative; transition: color 0.3s; cursor: none;
+}
+nav a::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease;
+}
+nav a:hover { color: var(--white); }
+nav a:hover::after { transform: scaleX(1); }
+.nav-divider {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  color: var(--dimmer); margin: 0 18px; font-size: 0.9rem;
+}
+
+.side-label {
+  position: fixed; font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: 0.65rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--dimmer); z-index: 50; pointer-events: none;
+}
+.side-left  { left: 18px; top: 50%; transform: translateX(-50%) rotate(-90deg); transform-origin: center center; }
+.side-right { right: 18px; top: 50%; transform: translateX(50%) rotate(90deg); transform-origin: center center; }
+
+.page-wrapper {
+  position: relative; z-index: 10; min-height: 100vh;
+  padding: 110px 70px 100px 70px;
+  display: flex; flex-direction: column;
+}
+
+.top-labels {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 42px;
+}
+.portfolio-label { display: flex; align-items: center; gap: 14px; }
+.portfolio-label span {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim);
+}
+.portfolio-line { width: 55px; height: 1px; background: linear-gradient(90deg, var(--pink), transparent); }
+
+.page-title {
+  font-family: 'Alkatra', cursive;
+  font-size: clamp(2.6rem, 5.5vw, 4.2rem); font-weight: 700;
+  color: var(--pink); letter-spacing: 0.08em; text-transform: uppercase;
+  text-shadow: 0 0 22px rgba(255,102,204,0.55), 0 0 60px rgba(255,102,204,0.22);
+  line-height: 1; animation: fadeUp 0.9s ease both;
+}
+
+.about-grid {
+  display: grid; grid-template-columns: 320px 1fr;
+  gap: 52px; flex: 1; align-items: start;
+}
+
+.photo-card { position: relative; animation: fadeUp 1s 0.2s ease both; }
+.photo-frame {
+  position: relative; border: 1.5px solid var(--pink); border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(255,102,204,0.35), 0 0 50px rgba(255,102,204,0.12), inset 0 0 12px rgba(255,102,204,0.06);
+  aspect-ratio: 3/4;
+  background: #0a0008;
+}
+.photo-frame img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: brightness(0.88) contrast(1.05);
+}
+.photo-frame::before, .photo-frame::after {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  pointer-events: none; z-index: 2;
+}
+.photo-frame::before {
+  top: 0; left: 0;
+  border-top: 1.5px solid var(--blue-cold); border-left: 1.5px solid var(--blue-cold);
+}
+.photo-frame::after {
+  bottom: 0; right: 0;
+  border-bottom: 1.5px solid var(--blue-cold); border-right: 1.5px solid var(--blue-cold);
+}
+.photo-name {
+  position: absolute; bottom: 0; right: 0; z-index: 3;
+  padding: 18px 16px 14px;
+  background: linear-gradient(135deg, transparent, rgba(0,0,0,0.82)); text-align: right;
+}
+.photo-name .name-zh {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 1.25rem; font-weight: 400; color: var(--pink);
+  letter-spacing: 0.14em; text-shadow: 0 0 14px rgba(255,102,204,0.7); display: block;
+}
+.photo-name .name-line {
+  display: block; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95));
+  box-shadow: 0 0 6px rgba(255,255,255,0.55);
+}
+
+.photo-deco-star {
+  position: absolute; bottom: -18px; left: -22px;
+  font-size: 2.8rem; color: var(--pink);
+  filter: drop-shadow(0 0 10px var(--pink));
+  animation: breath 2.8s ease-in-out infinite alternate;
+  user-select: none; pointer-events: none; z-index: 15;
+}
+.photo-deco-star2 {
+  position: absolute; top: 20px; left: -28px;
+  font-size: 1.4rem; color: var(--purple);
+  filter: drop-shadow(0 0 8px var(--purple));
+  animation: breath 3.5s 0.6s ease-in-out infinite alternate;
+  user-select: none; pointer-events: none; z-index: 15;
+}
+
+.info-col { display: flex; flex-direction: column; gap: 36px; animation: fadeUp 1s 0.35s ease both; }
+
+.info-module { position: relative; }
+.module-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; padding-bottom: 9px; border-bottom: 1px solid var(--dimmer);
+}
+.module-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim);
+}
+.star-deco {
+  display: inline-block; color: var(--pink); font-size: 0.75rem;
+  filter: drop-shadow(0 0 4px var(--pink));
+  animation: breath var(--sd, 2.4s) ease-in-out infinite alternate;
+  animation-delay: var(--sdelay, 0s);
+  line-height: 1; user-select: none;
+}
+@keyframes breath {
+  0%   { opacity: 0.4; transform: scale(0.9); }
+  100% { opacity: 1.0; transform: scale(1.1); }
+}
+
+.info-row {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 0.95rem; font-weight: 300; color: var(--white);
+  letter-spacing: 0.04em; padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; gap: 10px; transition: color 0.25s;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .label { color: var(--dim); min-width: 90px; flex-shrink: 0; }
+.info-row .sep   { color: var(--dimmer); margin: 0 2px; }
+.info-row .value { color: var(--white); }
+
+.work-row { position: relative; padding-left: 12px; cursor: none; }
+.work-row::before {
+  content: ''; position: absolute; left: 0; top: 50%;
+  transform: translateY(-50%); width: 2px; height: 60%;
+  background: var(--dimmer);
+  transition: background 0.3s, box-shadow 0.3s; border-radius: 2px;
+}
+.work-row:hover::before { background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+
+.skills-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; }
+.skill-icon {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  cursor: none; transition: transform 0.3s ease;
+}
+.skill-icon:hover { transform: translateY(-4px); }
+.skill-icon:hover .icon-box {
+  box-shadow: 0 0 14px rgba(255,102,204,0.55), 0 0 28px rgba(255,102,204,0.22), inset 0 0 8px rgba(255,102,204,0.08);
+  border-color: rgba(255,102,204,0.7);
+}
+.icon-box {
+  width: 56px; height: 56px; border-radius: 14px;
+  border: 1px solid rgba(255,102,204,0.35); overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 0 8px rgba(255,102,204,0.18), inset 0 0 6px rgba(255,102,204,0.04);
+  transition: box-shadow 0.3s, border-color 0.3s;
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-box svg { width: 32px; height: 32px; }
+.skill-label {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 0.6rem; letter-spacing: 0.06em;
+  color: var(--dim); text-align: center; white-space: nowrap;
+}
+
+footer {
+  position: relative; z-index: 10; padding: 40px 70px;
+  border-top: 1px solid var(--dimmer);
+  display: flex; justify-content: space-between; align-items: center;
+  animation: fadeIn 1.4s 0.6s ease both;
+}
+.footer-contact { display: flex; gap: 32px; }
+.footer-contact a {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); text-decoration: none; cursor: none;
+  transition: color 0.3s; position: relative;
+}
+.footer-contact a::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease;
+}
+.footer-contact a:hover { color: var(--white); }
+.footer-contact a:hover::after { transform: scaleX(1); }
+
+.year-badge {
+  font-family: 'Alkatra', cursive; font-size: 0.82rem;
+  letter-spacing: 0.2em; color: var(--dimmer);
+  border: 1px solid var(--dimmer); padding: 5px 14px; border-radius: 2px;
+  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: none;
+}
+.year-badge:hover { color: var(--pink); border-color: var(--pink); box-shadow: 0 0 10px rgba(255,102,204,0.3); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,102,204,0.25); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,102,204,0.5); }
+</style>
+</head>
+<body>
+
+<div class="vignette"></div>
+<div class="edge-top"></div>
+<div class="edge-right"></div>
+<div class="starfield" id="starfield"></div>
+<div class="bg-stars" id="bgStars"></div>
+<div id="floatStars"></div>
+
+<div id="cursor"></div>
+<div id="cursorRing"></div>
+
+<!-- 返回首页按钮：在 nav 之前，fixed 定位与 nav 同层 -->
+<a href="index.html" class="back-home">
+  <span class="back-arrow"></span>
+  <span class="back-label">Home</span>
+</a>
+
+<nav>
+  <a href="about me.html" class="nav-link">About Me</a>
+  <span class="nav-divider">/</span>
+  <a href="contents.html" class="nav-link">Contents</a>
+  <span class="nav-divider">/</span>
+  <a href="projects.html" class="nav-link">Projects</a>
+</nav>
+
+<span class="side-label side-left">Portfolio — 2026</span>
+<span class="side-label side-right">Visual Designer</span>
+
+<div class="page-wrapper">
+  <div class="top-labels">
+    <div class="portfolio-label">
+      <span>Portfolio</span>
+      <div class="portfolio-line"></div>
+    </div>
+    <div class="page-title">ABOUT ME</div>
+  </div>
+
+  <div class="about-grid">
+    <!-- LEFT: Photo Card -->
+    <div class="photo-card">
+      <div class="photo-frame">
+        <img src="about-photo.png" alt="Profile Photo" />
+        <div class="photo-name">
+          <span class="name-zh">张星玥</span>
+          <span class="name-line"></span>
+        </div>
+      </div>
+      <div class="photo-deco-star">&#10022;</div>
+      <div class="photo-deco-star2">&#10022;</div>
+    </div>
+
+    <!-- RIGHT: Info Column -->
+    <div class="info-col">
+
+      <!-- 1) Basic Info -->
+      <div class="info-module">
+        <div class="module-header">
+          <span class="module-title">基本信息</span>
+          <span class="star-deco" style="--sd:2.2s;--sdelay:0s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.6s;--sdelay:0.4s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.0s;--sdelay:0.8s;">&#10022;</span>
+        </div>
+        <div class="info-row"><span class="label">城市</span><span class="sep">/</span><span class="value">厦门</span></div>
+        <div class="info-row"><span class="label">学历</span><span class="sep">/</span><span class="value">本科</span></div>
+        <div class="info-row"><span class="label">电话</span><span class="sep">/</span><span class="value">18091801250</span></div>
+        <div class="info-row"><span class="label">邮箱</span><span class="sep">/</span><span class="value">3387808028@QQ.COM</span></div>
+      </div>
+
+      <!-- 2) Education -->
+      <div class="info-module">
+        <div class="module-header">
+          <span class="module-title">教育经历</span>
+          <span class="star-deco" style="--sd:2.4s;--sdelay:0.2s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.8s;--sdelay:0.6s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.1s;--sdelay:1.0s;">&#10022;</span>
+        </div>
+        <div class="info-row"><span class="label">学校</span><span class="sep">/</span><span class="value">福州大学</span></div>
+        <div class="info-row"><span class="label">专业</span><span class="sep">/</span><span class="value">服装与服饰设计</span></div>
+      </div>
+
+      <!-- 3) Work Experience -->
+      <div class="info-module">
+        <div class="module-header">
+          <span class="module-title">工作经历</span>
+          <span class="star-deco" style="--sd:2.3s;--sdelay:0.1s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.7s;--sdelay:0.5s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.5s;--sdelay:0.9s;">&#10022;</span>
+        </div>
+        <div class="info-row work-row"><span class="label">携程集团</span><span class="sep">/</span><span class="value">视觉设计师</span></div>
+        <div class="info-row work-row"><span class="label">宁德时代</span><span class="sep">/</span><span class="value">视觉设计师</span></div>
+        <div class="info-row work-row"><span class="label" style="min-width:165px;">上海壹佰米网络科技有限公司</span><span class="sep">/</span><span class="value">视觉设计师</span></div>
+      </div>
+
+      <!-- 4) Skills -->
+      <div class="info-module">
+        <div class="module-header">
+          <span class="module-title">专业技能</span>
+          <span class="star-deco" style="--sd:2.2s;--sdelay:0.3s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.9s;--sdelay:0.7s;">&#10022;</span>
+          <span class="star-deco" style="--sd:2.4s;--sdelay:1.1s;">&#10022;</span>
+        </div>
+        <div class="skills-grid">
+
+          <!-- Photoshop -->
+          <div class="skill-icon">
+            <div class="icon-box">
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="6" fill="#001e36"/>
+                <text x="8" y="20" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#31a8ff">Ps</text>
+              </svg>
+            </div>
+            <span class="skill-label">Photoshop</span>
+          </div>
+
+          <!-- Illustrator -->
+          <div class="skill-icon">
+            <div class="icon-box">
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="6" fill="#1a0a00"/>
+                <text x="8" y="20" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ff9a00">Ai</text>
+              </svg>
+            </div>
+            <span class="skill-label">Illustrator</span>
+          </div>
+
+          <!-- Figma -->
+          <div class="skill-icon">
+            <div class="icon-box">
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
+                <circle cx="19" cy="16" r="5" fill="#1abcfe"/>
+                <rect x="8" y="7" width="9" height="9" rx="4.5" fill="#f24e1e"/>
+                <rect x="8" y="16" width="9" height="9" rx="0" fill="#0acf83"/>
+                <rect x="8" y="7" width="9" height="9" rx="0" fill="#f24e1e"/>
+                <rect x="8" y="7" width="9" height="9" rx="4.5 4.5 0 0" fill="#ff7262"/>
+              </svg>
+            </div>
+            <span class="skill-label">Figma</span>
+          </div>
+
+          <!-- After Effects -->
+          <div class="skill-icon">
+            <div class="icon-box">
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="6" fill="#00003a"/>
+                <text x="7" y="20" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#9999ff">Ae</text>
+              </svg>
+            </div>
+            <span class="skill-label">After Effects</span>
+          </div>
+
+          <!-- C4D -->
+          <div class="skill-icon">
+            <div class="icon-box">
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="6" fill="#011a2e"/>
+                <circle cx="16" cy="16" r="8" stroke="#85c8e8" stroke-width="1.5" fill="none"/>
+                <circle cx="16" cy="16" r="4.5" stroke="#4ba8d8" stroke-width="1.2" fill="none"/>
+                <ellipse cx="16" cy="16" rx="8" ry="3.5" stroke="#5ec4f0" stroke-width="1" fill="none" transform="rotate(-30 16 16)"/>
+                <circle cx="16" cy="16" r="2" fill="#85c8e8"/>
+                <text x="4" y="28" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#85c8e8">C4D</text>
+              </svg>
+            </div>
+            <span class="skill-label">C4D</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-contact">
+    <a href="mailto:3387808028@qq.com">Email</a>
+    <a href="#">Behance</a>
+    <a href="#">WeChat</a>
+  </div>
+  <div class="year-badge">2026</div>
+</footer>
+
+<script>
+(function() {
+  const dot  = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.09; ry += (my - ry) * 0.09;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+  const hoverTargets = 'a, button, .skill-icon, .work-row, .year-badge, .back-home';
+  document.querySelectorAll(hoverTargets).forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+  });
+})();
+</script>
+
+<script>
+(function() {
+  const sf = document.getElementById('starfield');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('span');
+    const sz = Math.random() * 1.8 + 0.6;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--op:${(Math.random()*0.15+0.04).toFixed(2)};animation-delay:${(Math.random()*6).toFixed(1)}s;`;
+    sf.appendChild(s);
+  }
+  const bs = document.getElementById('bgStars');
+  const positions = [
+    {x:'8%',y:'78%',sz:'22px',d:'3.1s',delay:'0s'},
+    {x:'15%',y:'55%',sz:'10px',d:'2.7s',delay:'0.4s'},
+    {x:'6%',y:'30%',sz:'14px',d:'3.8s',delay:'1.1s'},
+    {x:'88%',y:'20%',sz:'12px',d:'2.5s',delay:'0.7s'},
+    {x:'92%',y:'65%',sz:'18px',d:'4.0s',delay:'0.2s'},
+    {x:'75%',y:'88%',sz:'10px',d:'3.3s',delay:'1.5s'},
+    {x:'40%',y:'92%',sz:'16px',d:'2.9s',delay:'0.9s'},
+    {x:'55%',y:'12%',sz:'9px',d:'3.5s',delay:'0.3s'},
+  ];
+  positions.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'bg-star';
+    el.textContent = '\u2726';
+    el.style.cssText = `left:${p.x};top:${p.y};--sz:${p.sz};--bd:${p.d};--bdelay:${p.delay};`;
+    bs.appendChild(el);
+  });
+})();
+</script>
+
+<script>
+(function() {
+  const container = document.getElementById('floatStars');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SPAWN_RATE   = reducedMotion ? 0.3 : 4.0;
+  const MAX_STARS    = reducedMotion ? 10  : 100;
+  const DRIFT_REDUCE = reducedMotion ? 0.15 : 1;
+  const CHARS        = ['\u2726', '\u2727'];
+  const COLORS       = ['#ff66cc', '#dd77ff', '#cc66ff', '#ff88dd'];
+
+  let dissolveY = window.innerHeight * 0.33;
+  window.addEventListener('resize', () => { dissolveY = window.innerHeight * 0.33; });
+
+  let stars = [];
+  let spawnAccum = 0;
+  let lastTime = null;
+
+  function spawnStar() {
+    if (stars.length >= MAX_STARS) return;
+    const el = document.createElement('div');
+    el.className = 'fstar';
+    const sz  = 6 + Math.random() * 12;
+    const col = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const op  = 0.2 + Math.random() * 0.4;
+    el.style.setProperty('--fsz',  sz  + 'px');
+    el.style.setProperty('--fcol', col);
+    el.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+    const x = Math.random() * window.innerWidth;
+    const y = window.innerHeight * (1 + Math.random() * 0.1);
+    const speed     = (10 + Math.random() * 25) * DRIFT_REDUCE;
+    const driftFreq = 0.4 + Math.random() * 0.8;
+    const driftAmp  = (8  + Math.random() * 18) * DRIFT_REDUCE;
+    const driftOff  = Math.random() * Math.PI * 2;
+    const fadeDur   = 500 + Math.random() * 400;
+    el.style.left    = x + 'px';
+    el.style.top     = y + 'px';
+    el.style.opacity = op;
+    container.appendChild(el);
+    stars.push({ el, x, y, speed, driftFreq, driftAmp, driftOff, baseOp: op, fadeDur, fading: false, fadeStart: 0 });
+  }
+
+  function tick(ts) {
+    if (!lastTime) lastTime = ts;
+    const dt = Math.min((ts - lastTime) / 1000, 0.1);
+    lastTime = ts;
+
+    spawnAccum += SPAWN_RATE * dt;
+    while (spawnAccum >= 1) {
+      spawnStar();
+      spawnAccum -= 1;
+    }
+
+    const toRemove = [];
+    stars.forEach((p, i) => {
+      p.y -= p.speed * dt;
+      const driftX = p.x + Math.sin(ts * 0.001 * p.driftFreq + p.driftOff) * p.driftAmp;
+      p.el.style.left = driftX + 'px';
+      p.el.style.top  = p.y    + 'px';
+
+      if (!p.fading && p.y <= dissolveY) {
+        p.fading = true;
+        p.fadeStart = ts;
+      }
+      if (p.fading) {
+        const prog = Math.min((ts - p.fadeStart) / p.fadeDur, 1);
+        p.el.style.opacity = p.baseOp * (1 - prog);
+        if (prog >= 1) toRemove.push(i);
+      }
+    });
+
+    for (let i = toRemove.length - 1; i >= 0; i--) {
+      container.removeChild(stars[toRemove[i]].el);
+      stars.splice(toRemove[i], 1);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
