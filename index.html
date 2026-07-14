@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Alkatra:wght@400;500;600;700&family=Cormorant:ital,wght@0,300;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --pink: #ff66cc;
+    --purple: #cc66ff;
+    --white: rgba(253, 236, 255, 0.763);
+    --dim: rgba(255, 255, 255, 0.413);
+    --dimmer: rgba(255,255,255,0.14);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    cursor: none;
+  }
+
+  /* ── Canvas ── */
+  #glCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  /* ── Custom Cursor ── */
+  #cursor {
+    position: fixed;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,102,204,0.9);
+    pointer-events: none;
+    transform: translate(-50%,-50%);
+    z-index: 9999;
+    transition: transform 0.12s ease, opacity 0.2s;
+    box-shadow: 0 0 12px 4px rgba(255,102,204,0.5);
+  }
+  #cursorRing {
+    position: fixed;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(204,102,255,0.4);
+    pointer-events: none;
+    transform: translate(-50%,-50%);
+    z-index: 9998;
+    transition: width 0.3s ease, height 0.3s ease, opacity 0.3s;
+  }
+
+  /* ── UI Layer ── */
+  #ui {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+  }
+
+  /* ── Top Nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(32px, 6vw, 80px);
+    padding: 36px 48px;
+    pointer-events: all;
+    z-index: 20;
+  }
+
+  nav a {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(9px, 1.05vw, 14px);
+    letter-spacing: 0.28em;
+    color: var(--white);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.6s ease, letter-spacing 0.6s ease;
+    position: relative;
+  }
+  nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0;
+    width: 0; height: 1px;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    transition: width 0.5s ease;
+  }
+  nav a:hover {
+    color: var(--white);
+    letter-spacing: 0.35em;
+  }
+  nav a:hover::after { width: 100%; }
+
+  nav .divider {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    color: rgba(255, 120, 233, 0.499);
+    font-size: 13px;
+    letter-spacing: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* ── Center Hero ── */
+  .hero {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    pointer-events: none;
+  }
+
+  .hero-title {
+    font-family: 'Alkatra', serif;
+    font-style: normal;
+    font-weight: 300;
+    font-size: clamp(60px, 14vw, 160px);
+    color: transparent;
+    background: linear-gradient(135deg,
+      rgb(255, 255, 255) 0%,
+      rgba(255,102,204,0.6) 80%,
+      rgba(204,102,255,0.5) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-align: center;
+    animation: heroReveal 1.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity: 0;
+    transform: translateY(24px);
+    filter: drop-shadow(0 0 60px rgba(255,102,204,0.15));
+  }
+
+  .hero-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(9px, 1.1vw, 12px);
+    letter-spacing: 0.48em;
+    color: var(--white);
+    text-transform: uppercase;
+    text-align: center;
+    animation: heroReveal 1.8s 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 0;
+    background: linear-gradient(180deg, rgba(255,102,204,0.5), transparent);
+    animation: scrollLine 2.2s 1.2s ease forwards;
+    margin-top: 8px;
+  }
+
+  /* ── Bottom Contact ── */
+  footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 30px 48px 34px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .contact-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    animation: fadeUp 2s 0.9s ease forwards;
+    opacity: 0;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .contact-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(7px, 0.7vw, 9px);
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.58);
+    text-transform: uppercase;
+    min-width: 44px;
+  }
+
+  .contact-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(7px, 0.75vw, 10px);
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.58);
+    text-transform: uppercase;
+  }
+
+  .footer-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    animation: fadeUp 2s 1.1s ease forwards;
+    opacity: 0;
+  }
+
+  .year-badge {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(7px, 0.7vw, 9px);
+    letter-spacing: 0.25em;
+    color: rgba(255, 255, 255, 0.581);
+    text-transform: uppercase;
+  }
+
+  /* ── Side Labels ── */
+  .side-left, .side-right {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    color: rgba(255, 255, 255, 0.295);
+    text-transform: uppercase;
+    z-index: 20;
+    pointer-events: none;
+    animation: fadeIn 3s 1.4s ease forwards;
+    opacity: 0;
+  }
+  .side-left { left: -28px; }
+  .side-right { right: -44px; }
+
+  /* ── Keyframes ── */
+  @keyframes heroReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  @keyframes scrollLine {
+    to { height: 60px; }
+  }
+
+  /* ── Vignette ── */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+      transparent 40%,
+      rgba(0,0,0,0.55) 100%);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* ── Grain Overlay ── */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    animation: grainShift 0.18s steps(1) infinite;
+  }
+  @keyframes grainShift {
+    0%   { background-position: 0 0; }
+    25%  { background-position: -40px -60px; }
+    50%  { background-position: 60px -20px; }
+    75%  { background-position: -20px 40px; }
+    100% { background-position: 30px -50px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="glCanvas"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div id="cursor"></div>
+<div id="cursorRing"></div>
+
+<!-- Top Nav -->
+<nav>
+  <a href="about me.html">关于我</a>
+  <span class="divider">/</span>
+  <a href="contents.html">目录</a>
+  <span class="divider">/</span>
+  <a href="projects.html">项目</a>
+</nav>
+
+<!-- Side Labels -->
+<div class="side-left">Visual Artist</div>
+<div class="side-right">2026 Portfolio</div>
+
+<!-- Hero Center -->
+<div class="hero">
+  <h1 class="hero-title">hello</h1>
+  <p class="hero-sub">点击上方导航栏探索我的作品</p>
+  <div class="scroll-line"></div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="contact-group">
+    <div class="contact-item">
+      <span class="contact-label">WeChat</span>
+      <span class="contact-value">ZhangXY--X</span>
+    </div>
+    <div class="contact-item">
+      <span class="contact-label">Tel</span>
+      <span class="contact-value">180 9180 1250</span>
+    </div>
+    <div class="contact-item">
+      <span class="contact-label">Email</span>
+      <span class="contact-value">3387808028@qq.com</span>
+    </div>
+  </div>
+  <div class="footer-right">
+    <span class="year-badge">Est. 2026</span>
+  </div>
+</footer>
+
+<!-- Three.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<script>
+/* ════════════════════════════════════════════
+   CUSTOM CURSOR
+════════════════════════════════════════════ */
+const cursor     = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+let cx = window.innerWidth/2, cy = window.innerHeight/2;
+let rx = cx, ry = cy;
+
+document.addEventListener('mousemove', e => {
+  cx = e.clientX; cy = e.clientY;
+  cursor.style.left = cx + 'px';
+  cursor.style.top  = cy + 'px';
+});
+
+function animateCursor() {
+  rx += (cx - rx) * 0.09;
+  ry += (cy - ry) * 0.09;
+  cursorRing.style.left = rx + 'px';
+  cursorRing.style.top  = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+document.querySelectorAll('a').forEach(a => {
+  a.addEventListener('mouseenter', () => {
+    cursorRing.style.width  = '48px';
+    cursorRing.style.height = '48px';
+    cursorRing.style.borderColor = 'rgba(255,102,204,0.5)';
+  });
+  a.addEventListener('mouseleave', () => {
+    cursorRing.style.width  = '32px';
+    cursorRing.style.height = '32px';
+    cursorRing.style.borderColor = 'rgba(204,102,255,0.4)';
+  });
+});
+
+/* ════════════════════════════════════════════
+   WEBGL SMOKE — PING-PONG FBO FLUID SIM
+════════════════════════════════════════════ */
+const canvas = document.getElementById('glCanvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 1);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+/* Sim resolution — lower = faster, still looks great */
+let SIM_W = Math.floor(window.innerWidth  * 0.35);
+let SIM_H = Math.floor(window.innerHeight * 0.35);
+
+/* ─── FBO Helpers ─── */
+function makeRT(w, h) {
+  return new THREE.WebGLRenderTarget(w, h, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format:    THREE.RGBAFormat,
+    type:      THREE.FloatType,
+    depthBuffer: false,
+  });
+}
+
+let rtA = makeRT(SIM_W, SIM_H);
+let rtB = makeRT(SIM_W, SIM_H);
+
+/* ─── Simulation Shader ─── */
+const simMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uPrev:        { value: null },
+    uMouse:       { value: new THREE.Vector2(0.5, 0.5) },
+    uMousePrev:   { value: new THREE.Vector2(0.5, 0.5) },
+    uResolution:  { value: new THREE.Vector2(SIM_W, SIM_H) },
+    uTime:        { value: 0 },
+    uDissipation: { value: 0.972 },
+    uRadius:      { value: 0.13 },
+    uStrength:    { value: 0.38 },
+    uColor1:      { value: new THREE.Color(1.0, 0.4, 0.8) },
+    uColor2:      { value: new THREE.Color(0.8, 0.4, 1.0) },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    precision highp float;
+    varying vec2 vUv;
+    uniform sampler2D uPrev;
+    uniform vec2 uMouse;
+    uniform vec2 uMousePrev;
+    uniform vec2 uResolution;
+    uniform float uTime;
+    uniform float uDissipation;
+    uniform float uRadius;
+    uniform float uStrength;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+
+    /* smooth noise */
+    float hash(vec2 p) {
+      p = fract(p * vec2(234.34, 435.345));
+      p += dot(p, p + 34.23);
+      return fract(p.x * p.y);
+    }
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      f = f*f*(3.0-2.0*f);
+      return mix(
+        mix(hash(i), hash(i+vec2(1,0)), f.x),
+        mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x),
+        f.y
+      );
+    }
+
+    void main() {
+      vec2 texel = 1.0 / uResolution;
+      vec2 uv = vUv;
+
+      /* ── Diffusion: sample neighbours ── */
+      vec4 c  = texture2D(uPrev, uv);
+      vec4 cN = texture2D(uPrev, uv + vec2(0, texel.y));
+      vec4 cS = texture2D(uPrev, uv - vec2(0, texel.y));
+      vec4 cE = texture2D(uPrev, uv + vec2(texel.x, 0));
+      vec4 cW = texture2D(uPrev, uv - vec2(texel.x, 0));
+      vec4 diffused = (c*4.0 + cN + cS + cE + cW) / 8.0;
+
+      /* ── Dissipate ── */
+      diffused *= uDissipation;
+
+      /* ── Noise-advect: gentle drift ── */
+      float t = uTime * 0.09;
+      float nx = noise(uv * 2.8 + vec2(t, 0.0));
+      float ny = noise(uv * 2.8 + vec2(0.0, t + 3.7));
+      vec2 drift = (vec2(nx, ny) - 0.5) * texel * 1.6;
+      vec4 advected = texture2D(uPrev, uv - drift);
+      diffused = mix(diffused, advected, 0.18);
+
+      /* ── Mouse splat ── */
+      vec2 delta = uMouse - uMousePrev;
+      float speed = length(delta);
+      float r = uRadius * (0.6 + speed * 12.0);
+
+      float dist = distance(uv, uMouse);
+      float splat = exp(-dist * dist / (r * r)) * uStrength * (0.5 + speed * 8.0);
+
+      /* Colour: lerp pink<->purple by noise + time */
+      float t2 = noise(uv * 1.4 + vec2(uTime * 0.04)) ;
+      vec3 splatColor = mix(uColor1, uColor2, t2);
+
+      diffused.rgb += splatColor * splat;
+      diffused.a   += splat * 0.6;
+
+      /* idle ambient when mouse still */
+      float ambient = exp(-dist * dist / (0.04)) * 0.006;
+      diffused.rgb += mix(uColor1, uColor2, noise(uv*3.0+uTime*0.05)) * ambient;
+
+      gl_FragColor = clamp(diffused, 0.0, 1.8);
+    }
+  `,
+});
+
+/* ─── Display Shader (with soft bloom) ─── */
+const dispMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uSim:        { value: null },
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
+  `,
+  fragmentShader: `
+    precision highp float;
+    varying vec2 vUv;
+    uniform sampler2D uSim;
+    uniform vec2 uResolution;
+
+    vec3 sampleBloom(sampler2D tex, vec2 uv, float radius) {
+      vec3 col = vec3(0.0);
+      vec2 px = radius / uResolution;
+      float total = 0.0;
+      for(int x = -2; x <= 2; x++) {
+        for(int y = -2; y <= 2; y++) {
+          float w = exp(-float(x*x + y*y) * 0.45);
+          col   += texture2D(tex, uv + vec2(float(x), float(y)) * px).rgb * w;
+          total += w;
+        }
+      }
+      return col / total;
+    }
+
+    void main() {
+      vec4 raw   = texture2D(uSim, vUv);
+      vec3 bloom = sampleBloom(uSim, vUv, 3.0);
+
+      /* additive blend: base + soft bloom glow */
+      vec3 color = raw.rgb + bloom * 0.55;
+
+      /* tone-map: keep dark except the smoke */
+      color = 1.0 - exp(-color * 1.6);
+
+      /* subtle vignette */
+      vec2 uv2 = vUv - 0.5;
+      float vig = 1.0 - dot(uv2, uv2) * 1.4;
+      color *= max(vig, 0.0);
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `,
+});
+
+/* ─── Full-screen quads ─── */
+const geo    = new THREE.PlaneGeometry(2, 2);
+const simMesh  = new THREE.Mesh(geo, simMat);
+const dispMesh = new THREE.Mesh(geo, dispMat);
+const simScene  = new THREE.Scene();
+const dispScene = new THREE.Scene();
+simScene.add(simMesh);
+dispScene.add(dispMesh);
+
+/* ─── Mouse tracking with inertia ─── */
+let mouseX = 0.5, mouseY = 0.5;
+let smoothX = 0.5, smoothY = 0.5;
+let prevSX = 0.5, prevSY = 0.5;
+const INERTIA = 0.042;
+
+/* Idle Lissajous drift */
+let idleTimer = 0, idleMode = false;
+const IDLE_AFTER = 2.2; // seconds
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX / window.innerWidth;
+  mouseY = 1.0 - e.clientY / window.innerHeight;
+  idleTimer = 0;
+  idleMode  = false;
+});
+
+/* ─── Animate ─── */
+let time = 0;
+const clock = new THREE.Clock();
+
+function tick() {
+  requestAnimationFrame(tick);
+  const dt = clock.getDelta();
+  time += dt;
+  idleTimer += dt;
+
+  if (idleTimer > IDLE_AFTER) idleMode = true;
+
+  /* Smooth mouse with lag */
+  if (idleMode) {
+    /* gentle Lissajous drift when cursor idle */
+    smoothX += (0.5 + Math.sin(time * 0.23) * 0.22 + Math.cos(time * 0.11) * 0.14 - smoothX) * 0.012;
+    smoothY += (0.5 + Math.cos(time * 0.19) * 0.18 + Math.sin(time * 0.31) * 0.10 - smoothY) * 0.012;
+  } else {
+    smoothX += (mouseX - smoothX) * INERTIA;
+    smoothY += (mouseY - smoothY) * INERTIA;
+  }
+
+  /* ── Sim pass ── */
+  simMat.uniforms.uPrev.value      = rtA.texture;
+  simMat.uniforms.uMouse.value.set(smoothX, smoothY);
+  simMat.uniforms.uMousePrev.value.set(prevSX, prevSY);
+  simMat.uniforms.uTime.value      = time;
+
+  renderer.setRenderTarget(rtB);
+  renderer.render(simScene, camera);
+  renderer.setRenderTarget(null);
+
+  /* Swap buffers */
+  const tmp = rtA; rtA = rtB; rtB = tmp;
+
+  /* ── Display pass ── */
+  dispMat.uniforms.uSim.value = rtA.texture;
+  renderer.render(dispScene, camera);
+
+  prevSX = smoothX;
+  prevSY = smoothY;
+}
+tick();
+
+/* ─── Resize ─── */
+window.addEventListener('resize', () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  SIM_W = Math.floor(window.innerWidth  * 0.35);
+  SIM_H = Math.floor(window.innerHeight * 0.35);
+
+  rtA.dispose(); rtB.dispose();
+  rtA = makeRT(SIM_W, SIM_H);
+  rtB = makeRT(SIM_W, SIM_H);
+
+  simMat.uniforms.uResolution.value.set(SIM_W, SIM_H);
+  dispMat.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
